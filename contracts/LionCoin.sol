@@ -1,9 +1,27 @@
-pragma solidity ^0.4.19;
+pragma solidity ^0.4.18;
 
-import 'zeppelin-solidity/contracts/token/ERC20/MintableToken.sol';
+import "./token/StandardToken.sol";
 
-contract LionCoin is MintableToken {
-	string public name = "Lion Coin";
-	string public symbol = "LION";
-	uint8 public decimals = 18;
+/**
+ * @title SimpleToken
+ * @dev Very simple ERC20 Token example, where all tokens are pre-assigned to the creator.
+ * Note they can later distribute these tokens as they wish using `transfer` and other
+ * `StandardToken` functions.
+ */
+contract LionCoin is StandardToken {
+
+  string public constant name = "LionCoinTest1";
+  string public constant symbol = "LCT1";
+  uint8 public constant decimals = 18;
+
+  uint256 public constant INITIAL_SUPPLY = 1000000000000000000000000 * (10 ** uint256(decimals));
+
+  /**
+   * @dev Constructor that gives msg.sender all of existing tokens.
+   */
+  function LionCoin() public {
+    totalSupply_ = INITIAL_SUPPLY;
+    balances[msg.sender] = INITIAL_SUPPLY;
+    Transfer(0x0, msg.sender, INITIAL_SUPPLY); // Record event
+  }
 }

@@ -1,4 +1,4 @@
-pragma solidity ^0.4.19;
+pragma solidity ^0.4.18;
 
 contract LionBase {
 
@@ -13,8 +13,8 @@ contract LionBase {
     struct Lion {
       string name;
       uint dna;
-      uint price = 0;
-      bool onMarket = false;
+      uint price;
+      bool onMarket;
     }
 
 
@@ -38,7 +38,7 @@ contract LionBase {
     }
 
     function _createLion(string _name, uint _dna) internal {
-        uint id = lions.push(Lion(_name, _dna)) - 1;
+        uint id = lions.push(Lion(_name, _dna, 0, false)) - 1;
         lionToOwner[id] = msg.sender;
         ownerLionCount[msg.sender]++;
         NewLion(id, _name, _dna);
@@ -82,10 +82,6 @@ contract LionBase {
     }
 
     function cancelLionOnMarket(uint _lionId) public onlyLionOwner(_lionId) {
-        _removeLionFromMarket(uint _lionId);
-    }
-
-    function _removeLionFromMarket(uint _lionId) internal {
         lions[_lionId].onMarket = false;
     }
 

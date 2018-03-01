@@ -70,8 +70,8 @@
 </template>
 
 <script>
-const Eth = require('ethjs-query')
-const EthContract = require('ethjs-contract')
+import Web3 from 'web3'
+import * as CoinContract from '../build/contracts/LionCoin.json'
 
 export default {
   name: 'App',
@@ -92,24 +92,26 @@ export default {
       title: 'Vuetify.js'
     }
   },
-  created() {
+  mounted() {
     // Check if Web3 has been injected by the browser:
     if (typeof window.web3 !== 'undefined') {
       // You have a web3 browser! Continue below!
       startApp(window.web3)
     } else {
-      // Warn the user that they need to get a web3 browser
-      // Or install MetaMask, maybe with a nice graphic.
     }
   }
 }
 
-function startApp(web3) {
-  const eth = new Eth(web3.currentProvider)
-  const contract = new EthContract(eth)
-  console.log(web3.currentProvider)
-  console.log(contract)
-  console.log(eth)
-  // initContract(contract)
+async function startApp(web3) {
+  const { eth, version } = new Web3(web3.currentProvider)
+
+  const [myAccount] = await eth.getAccounts()
+
+  const coinContractAddr = '0xD0a6Bb49ec2e2D54BA28388F30999e2bC3B7e3Da'
+  const contract = new eth.Contract(CoinContract.abi, coinContractAddr)
+  const myBalance = await contract.methods.balanceOf(myAccount).call() /  (10.0**18.0)
+
+  console.log(`My Current balance for account: ${myAccount} is ${myBalance}`)
+
 }
 </script>
