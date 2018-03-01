@@ -1,0 +1,13 @@
+{
+    "eslint.options": { 
+        "configFile": "/home/arturo/CodeProjects/lions/crypto-lions/.eslintrc.js"
+    },
+    "eslint.validate": [
+        "javascript", "vue", "html"
+    ],
+    "prettier.eslintIntegration": true,
+    "prettier.semi": false,
+    // If true, will use single instead of double quotes
+    "prettier.singleQuote": true,
+    "prettier.disableLanguages": [],
+}
