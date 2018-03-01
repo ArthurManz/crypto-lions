@@ -20,6 +20,8 @@ contract LionBase {
 
     Lion[] public lions;
 
+    uint marketLionCount;
+
     mapping (uint => address) public lionToOwner;
     mapping (address => uint) ownerLionCount;
 
@@ -77,16 +79,30 @@ contract LionBase {
 
     function putLionOnMarket(uint _lionId, uint _price) public onlyLionOwner(_lionId) {
         require (_price > 0);
+        marketLionCount++;
         lions[_lionId].onMarket = true;
         NewLionOnMarket(_lionId, _price);
     }
 
     function cancelLionOnMarket(uint _lionId) public onlyLionOwner(_lionId) {
         lions[_lionId].onMarket = false;
+        marketLionCount--;
     }
 
     // build the token first
     function buyLion(uint _lionId) public {
+    }
+
+    function getLionsOnMarket() external view returns(uint[]) {
+        uint[] memory result = new uint[](marketLionCount);
+        uint counter = 0;
+        for (uint i = 0; i < lions.length; i++) {
+            if (lions[i].onMarket) {
+                result[counter] = i;
+                counter++;
+            }
+        }
+        return result;
     }
 }
 
