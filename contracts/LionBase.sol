@@ -46,10 +46,13 @@ contract LionBase is LionCoin {
 
     function LionBase() public {
         owner = msg.sender;
+        for (uint i = 0; i < 100; i++) {
+            createRandomLion("Joe the Lion");
+        }
     }
 
     function _createLion(string _name, uint _dna) internal {
-        uint id = lions.push(Lion(_name, _dna, 0, false)) - 1;
+        uint id = lions.push(Lion(_name, _dna, 1, true)) - 1;
         lionToOwner[id] = msg.sender;
         ownerLionCount[msg.sender]++;
         NewLion(id, _name, _dna);
