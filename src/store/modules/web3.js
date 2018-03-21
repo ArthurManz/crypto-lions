@@ -5,7 +5,7 @@ import * as types from '../mutation-types'
 // initial state
 const state = {
   connected: false,
-  network: '',
+  network: 'Not Available',
   account: '',
   balance: {
     ether: 0,
@@ -44,6 +44,7 @@ const actions = {
         commit(types.SET_NETWORK, 'Rinkeby')
       } else {
         commit(types.SET_CONNECTED, false)
+        commit(types.SHOW_NOTIFICATION, { msg: 'Please install Metamask extension in your browser' })
       }
     }
     dispatch('getAccountAndBalances')
@@ -52,7 +53,7 @@ const actions = {
   },
   async getAccountAndBalances ({commit}) {
     const [account] = await getAccounts()
-    if (!account) {
+    if (typeof account === 'undefined' || !account) {
       // Disconnected/Logout from Metamask
       commit(types.SET_CONNECTED, false)
       return
@@ -73,7 +74,7 @@ const actions = {
 }
 
 function getAccounts () {
-  if (typeof window.web3 === 'undefined') return false
+  if (typeof window.web3 === 'undefined') return []
   return window.web3.eth.getAccounts()
 }
 

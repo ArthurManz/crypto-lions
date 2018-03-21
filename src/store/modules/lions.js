@@ -5,13 +5,17 @@ import { mapLionProperties } from '../utils'
 const state = {
   lions: [],
   myLionsIds: [],
-  marketPlace: []
+  marketPlace: [],
+  poolInterval: 0
 }
+
+const POLL_INTERVAL_IN_MILLIS = 5 * 1000 // 5 seconds
 
 const getters = {
   getAllLions: state => state.lions,
   getMyLions: state => state.lions.filter((lion, index) => state.myLionsIds.indexOf(index) > -1),
-  getMarketPlace: state => state.marketPlace
+  getMarketPlace: state => state.marketPlace,
+  getMyLionsIds: state => state.myLionsIds
 }
 
 const mutations = {
@@ -23,6 +27,12 @@ const mutations = {
   },
   [types.SET_MARKETPLACE] (state, lions) {
     state.marketPlace = lions
+  },
+  [types.SET_POLL_INTERVAL_LIONS] (state, interval) {
+    state.poolInterval = interval
+  },
+  [types.CLEAR_POLL_INTERVAL_LIONS] (state) {
+    clearInterval(state.poolInterval)
   }
 }
 
@@ -30,6 +40,7 @@ const actions = {
   async getAllLions ({commit}) {
     let lions = []
     const contract = LionContract()
+    if (typeof contract === 'undefined') return
     const count = await contract.methods.getLionsCount().call()
     for (let i = 0; i < count; i++) {
       const lion = await contract.methods.lions(i).call()
@@ -40,9 +51,13 @@ const actions = {
   },
   async getMyLions ({commit, rootState}) {
     const contract = LionContract()
-    console.log(rootState.web3.account)
+    if (typeof contract === 'undefined') return
     const lionsIds = await contract.methods.getLionsByOwner(rootState.web3.account).call()
     commit(types.SET_MY_LIONS, lionsIds)
+  },
+  startLionsPolling ({commit, dispatch}) {
+    const interval = setInterval(() => dispatch('getAllLions'), POLL_INTERVAL_IN_MILLIS)
+    commit(types.SET_POLL_INTERVAL_LIONS, interval)
   }
 }
 

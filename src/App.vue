@@ -11,6 +11,7 @@
 <script>
   import TopBarComponent from './components/cl-top-bar'
   import Notification from './components/cl-notification'
+  import * as types from './store/mutation-types'
 
   export default {
     name: 'App',
@@ -22,8 +23,11 @@
     },
     created () {
       this.$store.dispatch('initializeWeb3', (window.web3))
-      this.$store.dispatch('getAllLions')
-      setTimeout(() => this.$store.dispatch('getMyLions'), 5000)
+      this.$store.dispatch('startLionsPolling')
+    },
+    beforeDestroy () {
+      this.$store.commit(types.CLEAR_POLL_INTERVAL)
+      this.$store.commit(types.CLEAR_POLL_INTERVAL_LIONS)
     }
   }
 </script>
