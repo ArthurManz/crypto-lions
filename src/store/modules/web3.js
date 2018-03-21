@@ -1,63 +1,106 @@
 import Web3 from 'web3'
-import * as CoinContract from '../../../build/contracts/LionCoin.json'
-const coinContractAddr = '0xD0a6Bb49ec2e2D54BA28388F30999e2bC3B7e3Da'
+import LionContract from '../lion-contract'
+import * as types from '../mutation-types'
 
 // initial state
 const state = {
-  network: {},
-  coinContract: {},
-  accounts: []
+  connected: false,
+  network: '',
+  account: '',
+  balance: {
+    ether: 0,
+    token: 0
+  },
+  poolInterval: 0
 }
+
+const POLL_INTERVAL_IN_MILLIS = 3 * 1000 // 2 seconds
 
 // getters
 const getters = {
   getNetwork: state => state.network,
-  getAccounts: state => state.accounts
+  getAccount: state => state.account,
+  getConnected: state => state.connected,
+  getBalance: state => state.balance
 }
 
 // actions
 const actions = {
-  initializeWeb3: async function initializeWeb3({ commit, state }, web3) {
-    // Check if Web3 has been injected by the browser:
-    if (typeof web3 !== 'undefined') {
-      // You have a web3 browser! Continue below!
-      const web3Instance = new Web3(web3.currentProvider)
-      const accounts = await web3Instance.eth.getAccounts()
-      const networkId = await web3Instance.eth.net.getId()
-      if (networkId !== 4) {
-        window.alert(
-          'Please connect to Rinkeby Testnet, change it in Metamask'
-        )
-        return
+  async initializeWeb3 ({commit, dispatch, state}, web3) {
+    if (!state.connected) {
+      // Check if Web3 has been injected by Metamask into the browser
+      if (typeof web3 !== 'undefined') {
+        // Attach web3 instance to window
+        window.web3 = new Web3(web3.currentProvider)
+        const networkId = await window.web3.eth.net.getId()
+        if (networkId !== 4) {
+          commit([types.SHOW_NOTIFICATION], {
+            msg: 'Please connect to Rinkeby Testnet, change it in Metamask',
+            type: 'error'
+          })
+          return
+        }
+        commit(types.SET_CONNECTED, true)
+        commit(types.SET_NETWORK, 'Rinkeby')
+      } else {
+        commit(types.SET_CONNECTED, false)
       }
-      commit('setNetwork', 'Rinkeby')
-      const coinContractractInstance = new web3Instance.eth.Contract(
-        CoinContract.abi,
-        coinContractAddr
-      )
-      const accountsWithBalances = await Promise.all(
-        accounts.map(async account => ({
-          address: account,
-          balance: (
-            (await coinContractractInstance.methods.balanceOf(account).call()) /
-            10 ** 22
-          ).toFixed(0)
-        }))
-      )
-      commit('setAccounts', accountsWithBalances)
-    } else {
-      window.alert('Please download Metamask')
     }
+    dispatch('getAccountAndBalances')
+    if (state.connected) commit(types.SHOW_NOTIFICATION, { msg: 'Great! Connected with Metamask' })
+    dispatch('startPolling')
+  },
+  async getAccountAndBalances ({commit}) {
+    const [account] = await getAccounts()
+    if (!account) {
+      // Disconnected/Logout from Metamask
+      commit(types.SET_CONNECTED, false)
+      return
+    }
+    commit(types.SET_CONNECTED, true)
+    const ethBalance = await window.web3.eth.getBalance(account)
+    commit(types.SET_ACCOUNT, account)
+    commit(types.SET_ETH_BALANCE, ethBalance)
+    const contract = LionContract()
+    const DECIMALS = await contract.methods.decimals().call()
+    const tokens = await contract.methods.balanceOf(account).call()
+    commit(types.SET_TOKEN_BALANCE, (tokens / 10 ** DECIMALS).toFixed(0))
+  },
+  startPolling ({commit, dispatch}) {
+    const interval = setInterval(() => dispatch('getAccountAndBalances'), POLL_INTERVAL_IN_MILLIS)
+    commit(types.SET_POLL_INTERVAL, interval)
   }
+}
+
+function getAccounts () {
+  if (typeof window.web3 === 'undefined') return false
+  return window.web3.eth.getAccounts()
 }
 
 // mutations
 const mutations = {
-  setNetwork(state, network) {
+  [types.SET_CONNECTED] (state, connected) {
+    state.connected = connected
+    if (!connected) state.account = ''
+  },
+  [types.SET_NETWORK] (state, network) {
     state.network = network
   },
-  setAccounts(state, accounts) {
-    state.accounts = accounts
+  [types.SET_ACCOUNT] (state, account) {
+    state.account = account
+  },
+  [types.SET_TOKEN_BALANCE] (state, tokens) {
+    state.balance.token = tokens
+  },
+  [types.SET_ETH_BALANCE] (state, ether) {
+    state.balance.ether = ether
+  },
+  [types.SET_POLL_INTERVAL] (state, interval) {
+    state.poolInterval = interval
+  },
+  [types.CLEAR_POLL_INTERVAL] (state) {
+    clearInterval(state.poolInterval)
+    state.poolInterval = 0
   }
 }
 
