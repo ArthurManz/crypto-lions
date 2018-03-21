@@ -22,6 +22,8 @@
     },
     created () {
       this.$store.dispatch('initializeWeb3', (window.web3))
+      this.$store.dispatch('getAllLions')
+      setTimeout(() => this.$store.dispatch('getMyLions'), 5000)
     }
   }
 </script>

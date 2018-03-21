@@ -1,6 +1,6 @@
 import * as LionBaseArtifacts from '../contracts/LionBase.json'
 
-const ADDRESS = '0x2961d03f82865459c634ca5659a96e8aff9580db'
+const ADDRESS = '0x9F384658EE024eCE79dB0a72BD98A74cb1676C58'
 
 // create contracts
 export default function LionContract () {

@@ -4,7 +4,7 @@ export const CLEAR_NOTIFICATION = 'CLEAR_NOTIFICATION'
 
 // Lions
 export const SET_ALL_LIONS = 'SET_ALL_LIONS'
-export const SET_MARKETPLACE = 'SET_ALL_LIONS'
+export const SET_MARKETPLACE = 'SET_MARKETPLACE'
 export const SET_MY_LIONS = 'SET_MY_LIONS'
 
 // Web3 JS
