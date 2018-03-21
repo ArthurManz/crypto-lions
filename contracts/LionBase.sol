@@ -4,7 +4,7 @@ import './LionCoin.sol';
 
 contract LionBase is LionCoin {
 
-  event NewLion(uint lionId, string name, uint dna);
+  event NewLion(uint lionId, uint dna);
   event NewLionOnMarket(uint lionId, uint price);
   event LionSold(uint lionId, uint price, address oldOwner, address newOwner);
   event LionPriceChanged(uint lionId, uint price);
@@ -18,7 +18,6 @@ contract LionBase is LionCoin {
   uint purchaseCost = 5 * 10 ** 15; // 0.005 ether
 
   struct Lion {
-    string name;
     uint dna;
     uint price;
     bool onMarket;
@@ -47,7 +46,7 @@ contract LionBase is LionCoin {
   function LionBase() public {
     owner = msg.sender;
     for (uint i = 0; i < 10; i++) {
-      createRandomLion("Joe the Lion");
+      createRandomLion();
     }
   }
 
@@ -55,26 +54,21 @@ contract LionBase is LionCoin {
     return lions.length;
   }
 
-  function _createLion(string _name, uint _dna) internal {
-    uint id = lions.push(Lion(_name, _dna, 1, true)) - 1;
+  function _createLion(uint _dna) internal {
+    uint id = lions.push(Lion(_dna, 1, true)) - 1;
     lionToOwner[id] = msg.sender;
     ownerLionCount[msg.sender]++;
-    NewLion(id, _name, _dna);
+    NewLion(id, _dna);
   }
 
-  function _generateRandomDna(string _str) private view returns (uint) {
-    uint rand = uint(keccak256(_str, block.timestamp, lions.length));
+  function _generateRandomDna() private view returns (uint) {
+    uint rand = uint(keccak256(block.timestamp, lions.length));
     return rand % dnaModulus;
   }
 
-  function createRandomLion(string _name) public onlyOwner {
-    uint randDna = _generateRandomDna(_name);
-    randDna = randDna - randDna % 100;
-    _createLion(_name, randDna);
-  }
-
-  function changeLionName(uint _lionId, string _newName) external onlyLionOwner(_lionId) {
-    lions[_lionId].name = _newName;
+  function createRandomLion() public onlyOwner {
+    uint randDna = _generateRandomDna();
+    _createLion(randDna);
   }
 
   function getLionsByOwner(address _owner) external view returns(uint[]) {
