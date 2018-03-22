@@ -15,6 +15,7 @@
             class="yellow darken-3 mt-4"
             dark
             large
+            :to="{ name: 'GetStartedPage'}"
           >
             Get Started
           </v-btn>
