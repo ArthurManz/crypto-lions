@@ -7,8 +7,7 @@
         justify-center
       >
         <v-flex xs12 sm8 class="my-3">
-          <div class="text-xs-left" v-html=md_text>
-          </div>
+          <div v-html="md_text"></div>
         </v-flex>
       </v-layout>
     </section>
@@ -16,33 +15,21 @@
 </template>
 
 <script>
-  import * as howtoText from '../content/howto.json'
-
-  let marked = require('marked')
-
+  import marked from 'marked'
+  const URL_README = 'https://raw.githubusercontent.com/ArthurManz/ethereum-ico-workshop/master/README.md?token=AL4c4TFiV8hH5Dc96o70jsnilN-cuVC6ks5avV_SwA%3D%3D'
   export default {
     name: 'GetStartedPage',
     data () {
       return {
-        md_text: marked(howtoText['text'], {
-          pedantic: false,
-          gfm: true,
-          tables: true,
-          breaks: false,
-          sanitize: false,
-          smartLists: true,
-          smartypants: false,
-          xhtml: false
-        })
+        md_text: ''
       }
+    },
+    async created () {
+      fetch(URL_README)
+        .then(async (res) => {
+          this.md_text = marked(await res.text(), { sanitize: true })
+        })
+        .catch(console.log)
     }
   }
 </script>
-
-<style scoped>
-  .overlay {
-    opacity: 0.4;
-    filter: alpha(opacity=40); /* msie */
-    background-color: #000;
-  }
-</style>
