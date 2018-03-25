@@ -10,6 +10,7 @@ const state = {
 }
 
 const POLL_INTERVAL_IN_MILLIS = 5 * 1000 // 5 seconds
+const ETH_SCAN_TX_URL = 'https://rinkeby.etherscan.io/tx/'
 
 const getters = {
   getAllLions: state => state.lions,
@@ -46,8 +47,8 @@ const actions = {
       const lion = await contract.methods.lions(i).call()
       lions.push(lion)
     }
-    commit(types.SET_MARKETPLACE, lions.filter(l => !!l.onMarket))
     commit(types.SET_ALL_LIONS, lions.map(mapLionProperties))
+    commit(types.SET_MARKETPLACE, lions.map(mapLionProperties).filter(l => !!l.onMarket))
   },
   async getMyLions ({commit, rootState}) {
     const contract = LionContract()
@@ -58,6 +59,24 @@ const actions = {
   startLionsPolling ({commit, dispatch}) {
     const interval = setInterval(() => dispatch('getAllLions'), POLL_INTERVAL_IN_MILLIS)
     commit(types.SET_POLL_INTERVAL_LIONS, interval)
+  },
+  buyLion ({rootState, commit}, lionId) {
+    const contract = LionContract()
+    contract.methods.buyLion(lionId).send({from: rootState.web3.account})
+      .on('transactionHash', (h) => {
+        commit(types.SHOW_NOTIFICATION, {msg: `Sent Tx with hash: ${h}`, type: 'info'})
+        setTimeout(() => window.open(ETH_SCAN_TX_URL + h), '_blank', 2000)
+      })
+      .on('confirmation', (confirmationNumber, receipt) => {
+        if (confirmationNumber > 2 && confirmationNumber < 3) {
+          if (receipt) commit(types.SHOW_NOTIFICATION, {msg: `Confirmed transaction`, type: 'success'})
+          commit(types.SHOW_NOTIFICATION, {msg: `Failed transaction`, type: 'error'})
+        }
+      })
+      .on('error', (error) => {
+        commit(types.SHOW_NOTIFICATION, {msg: 'Failed transaction', type: 'error'})
+        console.log(error)
+      })
   }
 }
 

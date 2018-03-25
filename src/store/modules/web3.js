@@ -4,6 +4,8 @@ import * as types from '../mutation-types'
 
 // initial state
 const state = {
+  isLoading: false,
+  metamask: false,
   connected: false,
   network: 'Not Available',
   account: '',
@@ -21,6 +23,8 @@ const getters = {
   getNetwork: state => state.network,
   getAccount: state => state.account,
   getConnected: state => state.connected,
+  getMetamask: state => state.metamask,
+  getIsLoading: state => state.isLoading,
   getBalance: state => state.balance
 }
 
@@ -28,13 +32,15 @@ const getters = {
 const actions = {
   async initializeWeb3 ({commit, dispatch, state}, web3) {
     if (!state.connected) {
+      commit(types.IS_LOADING, true)
       // Check if Web3 has been injected by Metamask into the browser
       if (typeof web3 !== 'undefined') {
+        commit(types.METAMASK, true)
         // Attach web3 instance to window
         window.web3 = new Web3(web3.currentProvider)
         const networkId = await window.web3.eth.net.getId()
         if (networkId !== 4) {
-          commit([types.SHOW_NOTIFICATION], {
+          commit(types.SHOW_NOTIFICATION, {
             msg: 'Please connect to Rinkeby Testnet, change it in Metamask',
             type: 'error'
           })
@@ -44,11 +50,14 @@ const actions = {
         commit(types.SET_NETWORK, 'Rinkeby')
       } else {
         commit(types.SET_CONNECTED, false)
+        commit(types.METAMASK, false)
         commit(types.SHOW_NOTIFICATION, { msg: 'Please install Metamask extension in your browser' })
       }
     }
-    dispatch('getAccountAndBalances')
     if (state.connected) commit(types.SHOW_NOTIFICATION, { msg: 'Great! Connected with Metamask' })
+    dispatch('getAccountAndBalances')
+    dispatch('getAllLions')
+    // commit(types.IS_LOADING, false)
     dispatch('startPolling')
   },
   async getAccountAndBalances ({commit}) {
@@ -58,6 +67,7 @@ const actions = {
       commit(types.SET_CONNECTED, false)
       return
     }
+    window.web3.eth.defaultAccount = account
     commit(types.SET_CONNECTED, true)
     const ethBalance = await window.web3.eth.getBalance(account)
     commit(types.SET_ACCOUNT, account)
@@ -80,6 +90,12 @@ function getAccounts () {
 
 // mutations
 const mutations = {
+  [types.IS_LOADING] (state, isLoading) {
+    state.isLoading = isLoading
+  },
+  [types.METAMASK] (state, metamask) {
+    state.metamask = metamask
+  },
   [types.SET_CONNECTED] (state, connected) {
     state.connected = connected
     if (!connected) state.account = ''

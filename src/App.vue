@@ -12,14 +12,15 @@
   import TopBarComponent from './components/cl-top-bar'
   import Notification from './components/cl-notification'
   import * as types from './store/mutation-types'
+  import {mapGetters} from 'vuex'
 
   export default {
     name: 'App',
     components: {TopBarComponent, Notification},
-    data () {
-      return {
-        title: ''
-      }
+    computed: {
+      ...mapGetters({
+        loading: 'getIsLoading'
+      })
     },
     created () {
       this.$store.dispatch('initializeWeb3', (window.web3))

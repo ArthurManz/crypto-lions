@@ -1,5 +1,6 @@
 <template>
   <div>
+    <loading :show="true"></loading>
     <section>
       <v-layout
         column
@@ -15,10 +16,14 @@
 </template>
 
 <script>
+  import Loading from 'vue-full-loading'
   import marked from 'marked'
-  const URL_README = 'https://raw.githubusercontent.com/ArthurManz/ethereum-ico-workshop/master/README.md?token=AL4c4TFiV8hH5Dc96o70jsnilN-cuVC6ks5avV_SwA%3D%3D'
+  const URL_README = 'https://raw.githubusercontent.com/ArthurManz/ethereum-ico-workshop/master/' +
+    'README.md?token=AL4c4TFiV8hH5Dc96o70jsnilN-cuVC6ks5avV_SwA%3D%3D'
+
   export default {
     name: 'GetStartedPage',
+    components: {Loading},
     data () {
       return {
         md_text: ''

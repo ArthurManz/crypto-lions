@@ -7,6 +7,7 @@
         :items="lions"
         :rows-per-page-items="rowsPerPageItems"
         :pagination.sync="pagination"
+        :loading="loading"
       >
         <v-flex
           slot="item"
@@ -25,34 +26,29 @@
             <v-divider></v-divider>
             <v-list dense>
               <v-list-tile>
-                <v-list-tile-content>Birth Place:</v-list-tile-content>
-                <v-list-tile-content class="align-end">{{ props.item.birthPlace }}</v-list-tile-content>
-              </v-list-tile>
-              <v-list-tile>
-                <v-list-tile-content>Eyes Type:</v-list-tile-content>
-                <v-list-tile-content class="align-end">{{ props.item.eyesType }}</v-list-tile-content>
-              </v-list-tile>
-              <v-list-tile>
-                <v-list-tile-content>Eyes Colour:</v-list-tile-content>
-                <v-list-tile-content class="align-end">{{ props.item.eyesColour }}</v-list-tile-content>
-              </v-list-tile>
-              <v-list-tile>
-                <v-list-tile-content>Fur Colour:</v-list-tile-content>
-                <v-list-tile-content class="align-end">{{ props.item.furColour }}</v-list-tile-content>
-              </v-list-tile>
-              <v-list-tile>
-                <v-list-tile-content>Mane Colour:</v-list-tile-content>
-                <v-list-tile-content class="align-end">{{ props.item.maneColour }}</v-list-tile-content>
+                <v-list-tile-content>From</v-list-tile-content>
+                <v-list-tile-content class="align-end">{{ props.item.location.name }}, {{ props.item.location.country }}</v-list-tile-content>
               </v-list-tile>
             </v-list>
+            <v-card-media contain height="200px">
+              <iframe
+                width="100%"
+                height="200px"
+                frameborder="0" style="border:0"
+                :src="`https://www.google.com/maps/embed/v1/view?key=${apiKey}&center=${props.item.location.lat},${props.item.location.lng}&zoom=10`">
+              </iframe>
+            </v-card-media>
             <v-card-actions>
-              <v-btn small color="yellow darken-3">View Details</v-btn>
+              <v-btn small color="yellow darken-3" @click="buyLion(props.index)" :disabled="!props.item.onMarket">
+                Buy for {{props.item.price}} T
+              </v-btn>
             </v-card-actions>
           </v-card>
         </v-flex>
         <template slot="no-data">
-          <v-alert :value="true" color="error" icon="warning">
-            No lions
+          <v-alert :value="true" color="brown" icon="info" class="ma-5">
+            <img src="/static/lion-icon.png" height="50px"/>
+            <p>No lions :(</p>
           </v-alert>
         </template>
       </v-data-iterator>
@@ -61,26 +57,42 @@
 
 <script>
   import { mapGetters } from 'vuex'
+  const API_KEY_GOOGLE = 'AIzaSyD32e6qVtLM4FCIJx2vk4WanId3Xu5wLOU'
 
   export default {
     name: 'AllLionsPage',
     computed: {
       ...mapGetters({
-        lions: 'getAllLions'
-      })
+        account: 'getAccount',
+        lions: 'getAllLions',
+        isLoading: 'getIsLoading'
+      }),
+      loading () {
+        return this.isLoading ? 'brown' : '' // TODO: Fix this
+      }
     },
     data: () => ({
       rowsPerPageItems: [4, 8, 12],
       pagination: {
         rowsPerPage: 4
-      }
+      },
+      apiKey: API_KEY_GOOGLE,
+      location: '0,0'
     }),
     created () {
       this.$store.dispatch('getAllLions')
+    },
+    methods: {
+      buyLion (lionId) {
+        this.$store.dispatch('buyLion', lionId)
+      }
     }
   }
 </script>
 
 <style scoped>
-
+  img {
+    -webkit-filter: grayscale(100%); /* Safari 6.0 - 9.0 */
+    filter: grayscale(100%);
+  }
 </style>

@@ -1,23 +1,29 @@
 <template>
   <v-toolbar prominent color="yellow darken-3">
-    <a href="/">
-    <img src="/static/lion-icon.png" height="50px" class="ml-5"/>
-    </a>
-    <v-toolbar-title class="headline brown--text hidden-xs-only" href="/">CryptoLions</v-toolbar-title>
+    <router-link tag="img" src="/static/lion-icon.png" height="50px" class="ml-5" :to="{name: 'HomePage'}" style="cursor: pointer !important;"/>
+    <router-link tag="span" style="cursor: pointer !important;" :to="{name: 'HomePage'}">
+    <v-toolbar-title class="headline brown--text hidden-xs-only">CryptoLions</v-toolbar-title>
+    </router-link>
     <v-spacer></v-spacer>
-    <span v-if="connected">
-      <v-btn icon :to="{ name: 'AllLionsPage'}">
-        <v-icon color="brown">search</v-icon>
-      </v-btn>
-      <v-btn icon>
-        <v-icon color="brown">shopping_basket</v-icon>
-      </v-btn>
-      <v-btn icon>
-        <v-badge class="mr-5" color="brown">
-          <span slot="badge">{{totalLions}}</span>
+    <span v-if="metamask">
+      <v-tooltip bottom>
+        <v-btn icon :to="{ name: 'AllLionsPage'}" slot="activator">
+          <v-icon color="brown">search</v-icon>
+        </v-btn>
+        <span>All Lions</span>
+      </v-tooltip>
+      <v-tooltip bottom>
+        <v-btn icon :to="{ name: 'MarketPlacePage'}" slot="activator">
+          <v-icon color="brown">shopping_basket</v-icon>
+        </v-btn>
+        <span>Marketplace</span>
+      </v-tooltip>
+      <v-tooltip bottom>
+        <v-btn icon class="mr-5":to="{name: 'MyLionsPage'}" slot="activator">
           <v-icon color="brown">person</v-icon>
-        </v-badge>
-      </v-btn>
+        </v-btn>
+        <span>My Lions</span>
+      </v-tooltip>
     </span>
     <span v-else>
       <v-btn flat class="mr-5" color="brown" href="https://metamask.io/" target="_blank">
@@ -35,6 +41,7 @@
     name: 'ClTopBar',
     computed: {
       ...mapGetters({
+        metamask: 'getMetamask',
         connected: 'getConnected',
         myLionsIds: 'getMyLionsIds'
       }),
